@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VELA Build Journal — Session 1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #c9d1d9;
+      line-height: 1.7;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    header {
+      border-left: 4px solid #58a6ff;
+      padding-left: 1.2rem;
+      margin-bottom: 3rem;
+    }
+    header h1 {
+      font-size: 1.9rem;
+      color: #e6edf3;
+      font-weight: 700;
+    }
+    header p {
+      color: #8b949e;
+      margin-top: 0.3rem;
+      font-size: 0.95rem;
+    }
+    header .badge {
+      display: inline-block;
+      margin-top: 0.6rem;
+      background: #1f6feb22;
+      border: 1px solid #1f6feb;
+      color: #58a6ff;
+      padding: 0.2rem 0.7rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    /* ── Section ── */
+    section {
+      margin-bottom: 2.5rem;
+    }
+    section h2 {
+      font-size: 1.2rem;
+      color: #e6edf3;
+      font-weight: 600;
+      border-bottom: 1px solid #21262d;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    section h2 .num {
+      background: #1f6feb;
+      color: #fff;
+      font-size: 0.75rem;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .card h3 {
+      font-size: 1rem;
+      color: #e6edf3;
+      margin-bottom: 0.5rem;
+    }
+    .card p, .card li {
+      font-size: 0.92rem;
+      color: #8b949e;
+    }
+    .card ul, .card ol {
+      padding-left: 1.4rem;
+      margin-top: 0.4rem;
+    }
+    .card li {
+      margin-bottom: 0.3rem;
+    }
+    .card .why {
+      margin-top: 0.7rem;
+      background: #0d1117;
+      border-left: 3px solid #58a6ff;
+      padding: 0.5rem 0.8rem;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.88rem;
+      color: #79c0ff;
+    }
+
+    /* ── Code block ── */
+    pre {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      overflow-x: auto;
+      margin-top: 0.8rem;
+      margin-bottom: 0.4rem;
+    }
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.83rem;
+      color: #e6edf3;
+    }
+    pre code {
+      color: #e6edf3;
+    }
+    .inline-code {
+      background: #21262d;
+      border-radius: 3px;
+      padding: 0.1rem 0.4rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #79c0ff;
+    }
+
+    /* ── Error / Fix blocks ── */
+    .error-card {
+      background: #161b22;
+      border: 1px solid #da3633;
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .error-card .error-title {
+      font-weight: 600;
+      color: #ff7b72;
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+    .error-card .error-cause {
+      color: #8b949e;
+      font-size: 0.9rem;
+    }
+    .fix-block {
+      margin-top: 0.8rem;
+      background: #0d1117;
+      border-left: 3px solid #3fb950;
+      padding: 0.5rem 0.8rem;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.88rem;
+      color: #56d364;
+    }
+    .fix-block strong {
+      color: #3fb950;
+    }
+
+    /* ── Concept pill ── */
+    .concept-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .pill {
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      padding: 0.2rem 0.8rem;
+      font-size: 0.8rem;
+      color: #8b949e;
+    }
+
+    /* ── Flow diagram (text) ── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 0.8rem;
+    }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .flow-step .step-line {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .flow-step .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #58a6ff;
+      flex-shrink: 0;
+      margin-top: 0.35rem;
+    }
+    .flow-step .vline {
+      width: 2px;
+      background: #21262d;
+      flex-grow: 1;
+      min-height: 24px;
+    }
+    .flow-step .step-body {
+      padding-bottom: 1rem;
+      font-size: 0.9rem;
+      color: #c9d1d9;
+    }
+    .flow-step .step-body strong {
+      color: #e6edf3;
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin-top: 0.5rem;
+    }
+    th {
+      background: #21262d;
+      color: #e6edf3;
+      text-align: left;
+      padding: 0.5rem 0.8rem;
+      border: 1px solid #30363d;
+    }
+    td {
+      padding: 0.5rem 0.8rem;
+      border: 1px solid #21262d;
+      color: #8b949e;
+      vertical-align: top;
+    }
+    tr:hover td {
+      background: #161b22;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 4rem;
+      border-top: 1px solid #21262d;
+      padding-top: 1.2rem;
+      font-size: 0.82rem;
+      color: #484f58;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>VELA Build Journal</h1>
+    <p>M-Pesa Payment Automation Platform — Day 1 Progress Log</p>
+    <span class="badge">Session 1 &nbsp;·&nbsp; 17 June 2026</span>
+  </header>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       1. WHAT WE ARE BUILDING
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">1</span> What We Are Building</h2>
+    <div class="card">
+      <h3>VELA — Automated M-Pesa Payment Collection for Small Businesses</h3>
+      <p>Vela is a B2B SaaS platform that removes the manual work of chasing M-Pesa payments. Target customers are cloud kitchens, landlords, schools, gyms, and small businesses in Kenya who currently rely on M-Pesa screenshots and manual reconciliation.</p>
+      <ul style="margin-top:0.6rem;">
+        <li>A business signs up to Vela and provides their M-Pesa shortcode details.</li>
+        <li>Their customers receive an automatic payment prompt on their phone (STK Push).</li>
+        <li>When the customer pays, Vela receives a real-time callback from Safaricom and logs the payment automatically.</li>
+        <li>No screenshots. No manual chasing. No guessing.</li>
+      </ul>
+      <div class="why">
+        <strong>The 90-day plan:</strong> Build the core payment engine in days 1–30, acquire 3 paying merchants in days 31–60, then refine and scale in days 61–90.
+      </div>
+    </div>
+    <div class="card">
+      <h3>Technical Stack</h3>
+      <div class="concept-row">
+        <span class="pill">FastAPI — Python backend</span>
+        <span class="pill">Supabase — PostgreSQL database</span>
+        <span class="pill">Safaricom Daraja API — M-Pesa integration</span>
+        <span class="pill">ngrok — local tunnel for callbacks</span>
+        <span class="pill">Railway — cloud deployment (later)</span>
+        <span class="pill">Next.js — frontend dashboard (later)</span>
+        <span class="pill">WhatsApp Cloud API — notifications (later)</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       2. VIRTUAL ENVIRONMENT — WHY IT AUTO-ACTIVATES
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">2</span> Python Virtual Environment</h2>
+    <div class="card">
+      <h3>Why we use a virtual environment</h3>
+      <p>Python packages installed globally conflict when different projects need different versions of the same library. A virtual environment is an isolated folder (<span class="inline-code">venv/</span>) that contains its own Python interpreter and its own set of installed packages — completely separate from everything else on your machine.</p>
+      <div class="why">
+        <strong>Why this matters for Vela:</strong> FastAPI, httpx, supabase-py, and python-dotenv are all installed inside <span class="inline-code">venv/</span>. If you pip-install them globally, they could clash with another project. Isolation keeps the build clean and reproducible.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Creating the virtual environment (one time only)</h3>
+      <pre><code>python -m venv venv</code></pre>
+      <p>This creates a folder called <span class="inline-code">venv/</span> in your project root. Inside it is a full copy of the Python interpreter and a <span class="inline-code">Scripts/</span> folder with its own pip.</p>
+    </div>
+
+    <div class="card">
+      <h3>Activating it manually (when terminal does not activate it automatically)</h3>
+      <pre><code># PowerShell (VS Code default)
+.\venv\Scripts\Activate.ps1
+
+# If PowerShell blocks scripts, run this once first:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser</code></pre>
+      <p>When activated, your terminal prompt changes to show <span class="inline-code">(venv)</span> at the start. That is the signal that you are inside the isolated environment.</p>
+    </div>
+
+    <div class="card">
+      <h3>Why it seems to activate itself in new terminals</h3>
+      <p>VS Code has a setting: <strong>Python: Terminal Activate Environment</strong>. When it is turned on, VS Code detects the <span class="inline-code">venv/</span> folder in your project and automatically runs <span class="inline-code">Activate.ps1</span> every time a new terminal opens inside that workspace.</p>
+      <p style="margin-top:0.5rem;">This is not magic — VS Code is doing it for you. It reads the Python interpreter you selected (bottom status bar), sees it points to <span class="inline-code">venv/Scripts/python.exe</span>, and activates the environment before you type anything. If it ever stops doing this, just activate manually using the command above.</p>
+      <div class="why">
+        <strong>Key rule:</strong> Always confirm <span class="inline-code">(venv)</span> is in your prompt before running <span class="inline-code">pip install</span> or <span class="inline-code">uvicorn</span>. If it is not there, your packages go to the wrong place.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Packages installed</h3>
+      <pre><code>pip install fastapi uvicorn httpx python-dotenv supabase</code></pre>
+      <table style="margin-top:0.8rem;">
+        <tr><th>Package</th><th>Purpose</th></tr>
+        <tr><td>fastapi</td><td>The web framework — defines our API routes and request/response models</td></tr>
+        <tr><td>uvicorn</td><td>The server that runs FastAPI (ASGI server)</td></tr>
+        <tr><td>httpx</td><td>Makes HTTP requests to Daraja from inside Python</td></tr>
+        <tr><td>python-dotenv</td><td>Reads the .env file so credentials never live in code</td></tr>
+        <tr><td>supabase</td><td>Python client for our Supabase (PostgreSQL) database</td></tr>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       3. SAFARICOM DARAJA PORTAL
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">3</span> Safaricom Daraja Developer Portal</h2>
+    <div class="card">
+      <h3>What Daraja is</h3>
+      <p>Daraja is Safaricom's API gateway — the technical bridge between software systems and M-Pesa. Without Daraja, there is no way to programmatically trigger or receive M-Pesa payments. All STK Push requests, callbacks, and B2C payments go through Daraja.</p>
+    </div>
+
+    <div class="card">
+      <h3>Account strategy: one developer account, many apps</h3>
+      <p>Vela uses <strong>one Safaricom Developer Portal account</strong> (owned by Fredrick / Vela), and creates a separate <strong>App</strong> inside it for each merchant in production. This means:</p>
+      <ul>
+        <li>Vela manages one login, one developer relationship with Safaricom.</li>
+        <li>Each merchant gets their own Consumer Key + Consumer Secret tied to their own M-Pesa shortcode.</li>
+        <li>Credentials are isolated — one merchant's credentials cannot touch another's transactions.</li>
+      </ul>
+      <div class="why">
+        <strong>Why not one app for all merchants?</strong> A single app would mean one shortcode, and M-Pesa money would land in one account. Each merchant needs their own till/paybill number, so each needs their own Daraja app linked to that shortcode.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Sandbox credentials obtained</h3>
+      <p>The sandbox is a test environment — no real money moves. We created an app called <strong>VEla</strong> in the sandbox and retrieved:</p>
+      <table>
+        <tr><th>Credential</th><th>Where to find it</th><th>What it is for</th></tr>
+        <tr><td>Consumer Key</td><td>App details page</td><td>Username for OAuth token requests</td></tr>
+        <tr><td>Consumer Secret</td><td>App details page</td><td>Password for OAuth token requests</td></tr>
+        <tr><td>Shortcode</td><td>Test Credentials tab → Simulator</td><td>The virtual "till number" — 174379 for sandbox</td></tr>
+        <tr><td>Passkey</td><td>Test Credentials tab → Simulator</td><td>Used to create the password hash for STK Push</td></tr>
+      </table>
+      <div class="why" style="margin-top:0.8rem;">
+        <strong>Security rule learned the hard way:</strong> Never paste credentials in chat, never commit them to git. They live only in the <span class="inline-code">.env</span> file, which is in <span class="inline-code">.gitignore</span>.
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       4. PROJECT STRUCTURE
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">4</span> Project File Structure</h2>
+    <div class="card">
+      <pre><code>VELA_AI_PAYMENT_INTEGRATION/
+├── app/
+│   ├── __init__.py            ← empty file, tells Python this is a package
+│   ├── main.py                ← FastAPI entry point
+│   ├── daraja/
+│   │   ├── __init__.py
+│   │   ├── auth.py            ← OAuth token fetching + caching
+│   │   ├── stk_push.py        ← initiates payment prompt to phone
+│   │   └── callbacks.py       ← receives Daraja's payment confirmation
+│   └── db/
+│       ├── __init__.py
+│       └── supabase.py        ← database client
+├── venv/                      ← virtual environment (never committed)
+├── .env                       ← credentials (never committed)
+├── .gitignore
+├── requirements.txt
+└── journal/
+    └── progress.html          ← this file</code></pre>
+      <div class="why" style="margin-top:0.8rem;">
+        <strong>Why <span class="inline-code">__init__.py</span> files?</strong> Python needs them to know that a folder is a "package" — meaning you can import from it using dots, like <span class="inline-code">from app.daraja.auth import get_access_token</span>. Without them, Python treats the folder as just a folder, not a module, and the import fails.
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       5. THE .ENV FILE
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">5</span> The .env File — Keeping Credentials Safe</h2>
+    <div class="card">
+      <h3>What it contains</h3>
+      <pre><code>DARAJA_CONSUMER_KEY=your_consumer_key_here
+DARAJA_CONSUMER_SECRET=your_consumer_secret_here
+DARAJA_SHORTCODE=174379
+DARAJA_PASSKEY=bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919
+DARAJA_ENVIRONMENT=sandbox
+SUPABASE_URL=https://mreqmrxhdkxsgmngjzfd.supabase.co
+SUPABASE_SERVICE_KEY=your_service_key_here
+DARAJA_CALLBACK_URL=https://your-ngrok-url/callbacks/stk-result</code></pre>
+    </div>
+    <div class="card">
+      <h3>Why this approach</h3>
+      <p>If credentials were written directly in Python files and committed to git, anyone with access to the repository would have full access to your M-Pesa account and database. The <span class="inline-code">.env</span> file is listed in <span class="inline-code">.gitignore</span>, so git never tracks it. <span class="inline-code">python-dotenv</span> reads it at runtime and injects the values as environment variables that Python code can access with <span class="inline-code">os.getenv()</span>.</p>
+      <div class="why">
+        <strong>Rule:</strong> If someone asks for your credentials in chat to debug — never do it. The solution is always to look at the file directly or print a masked version. Credentials once pasted in chat should be considered exposed and regenerated immediately.
+      </div>
+    </div>
+    <div class="card">
+      <h3>How Supabase key names changed</h3>
+      <p>Supabase recently renamed their keys to make them less confusing:</p>
+      <table>
+        <tr><th>Old name</th><th>New name</th><th>Which one Vela uses</th></tr>
+        <tr><td>anon key</td><td>Publishable key</td><td>No — this is for browser/frontend (low privilege)</td></tr>
+        <tr><td>service_role key</td><td>Secret key</td><td>Yes — this is for backend only (bypasses all RLS)</td></tr>
+      </table>
+      <div class="why" style="margin-top:0.7rem;">
+        We use the Secret (service_role) key in our backend because we need to write to the database from the server without restrictions. Never expose this key in frontend code.
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       6. SUPABASE DATABASE TABLES
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">6</span> Supabase — Database Design</h2>
+    <div class="card">
+      <h3>Why we use Supabase</h3>
+      <p>Supabase gives us a hosted PostgreSQL database with a nice dashboard, auto-generated APIs, and a Python client library. We do not need to set up or manage a database server. The free tier is enough for development and early customers.</p>
+    </div>
+
+    <div class="card">
+      <h3>Table 1 — merchants</h3>
+      <p>Stores each business that uses Vela. Every other table references <span class="inline-code">merchant_id</span> from this table.</p>
+      <pre><code>CREATE TABLE merchants (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        text NOT NULL,
+  created_at  timestamptz DEFAULT now()
+);</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Table 2 — transactions</h3>
+      <p>Records every payment attempt — whether it succeeds, fails, or is still waiting.</p>
+      <pre><code>CREATE TABLE transactions (
+  id                   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  merchant_id          uuid REFERENCES merchants(id),
+  checkout_request_id  text UNIQUE,
+  mpesa_receipt        text UNIQUE,
+  amount               numeric,
+  phone                text,
+  status               text DEFAULT 'pending',
+  failure_reason       text,
+  created_at           timestamptz DEFAULT now()
+);</code></pre>
+      <div class="why">
+        <strong>Why UNIQUE on checkout_request_id and mpesa_receipt?</strong> These are the idempotency guards. If Daraja sends the same callback twice (it sometimes does), the second attempt to insert will fail on the unique constraint rather than creating a duplicate paid record. This prevents double-crediting a payment.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Table 3 — daraja_logs</h3>
+      <p>Logs every request sent to Daraja and every callback received from Daraja. This is the audit trail — if something goes wrong, you can replay what was sent and what came back.</p>
+      <pre><code>CREATE TABLE daraja_logs (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  merchant_id uuid REFERENCES merchants(id),
+  direction   text,   -- 'request', 'callback', 'callback_unmatched'
+  payload     jsonb,
+  created_at  timestamptz DEFAULT now()
+);</code></pre>
+      <div class="why">
+        <strong>Why jsonb?</strong> Daraja's request and callback payloads have different shapes. jsonb lets us store any structure without defining a rigid schema for every possible field Daraja might send. We can still query inside it.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Multi-tenancy: merchant_id on every table</h3>
+      <p>Every table has a <span class="inline-code">merchant_id</span> column. This is the core of multi-tenancy. When merchant A's payment comes in, it is tagged with merchant A's ID at the moment of insert. When we query transactions for a dashboard, we always filter by merchant_id. This ensures one merchant can never see another's data — enforced at the database level, not just in application code.</p>
+    </div>
+
+    <div class="card">
+      <h3>How SQL runs in Supabase</h3>
+      <p>In the Supabase dashboard, go to <strong>SQL Editor</strong>. You can open multiple query tabs. Running a CREATE TABLE in a new tab is safe — it does not affect any existing tables. Running an ALTER TABLE on an existing table modifies it in place without deleting its data.</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       7. THE DARAJA FLOW — HOW STK PUSH WORKS
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">7</span> How the Full Daraja STK Push Flow Works</h2>
+    <div class="card">
+      <div class="flow">
+        <div class="flow-step">
+          <div class="step-line"><div class="dot"></div><div class="vline"></div></div>
+          <div class="step-body"><strong>Step 1 — Get OAuth Token</strong><br>
+          Before any request to Daraja, we must prove who we are. We send our Consumer Key + Consumer Secret (base64-encoded) to Daraja's OAuth endpoint. Daraja returns a time-limited access token (valid ~1 hour). We cache this token for 55 minutes so we do not hit Daraja on every single payment — that would slow things down and exceed rate limits.
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-line"><div class="dot"></div><div class="vline"></div></div>
+          <div class="step-body"><strong>Step 2 — Send STK Push request</strong><br>
+          We POST to Daraja's STK Push endpoint with: the shortcode, a base64 password (shortcode + passkey + timestamp), the customer's phone number, the amount, and our callback URL. Daraja validates our token and sends a payment prompt to the customer's phone. Daraja responds immediately with a <span class="inline-code">CheckoutRequestID</span> — this is the receipt number we use to track this transaction.
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-line"><div class="dot"></div><div class="vline"></div></div>
+          <div class="step-body"><strong>Step 3 — Customer acts</strong><br>
+          The customer sees a pop-up on their phone saying "Enter M-Pesa PIN to pay KES X to [business]". They either enter their PIN and pay, or they dismiss/ignore it (which counts as a failed transaction after timeout).
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-line"><div class="dot"></div><div class="vline"></div></div>
+          <div class="step-body"><strong>Step 4 — Daraja sends callback to Vela</strong><br>
+          After the customer acts (or times out), Safaricom's servers POST a JSON payload to our callback URL. The payload contains the same <span class="inline-code">CheckoutRequestID</span>, a result code (0 = success, anything else = failure), and on success: the M-Pesa receipt number and confirmed amount.
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-line"><div class="dot"></div></div>
+          <div class="step-body"><strong>Step 5 — Vela updates the database</strong><br>
+          Our callback handler finds the pending transaction by <span class="inline-code">CheckoutRequestID</span>, checks it has not already been processed (idempotency), then updates the status to "paid" or "failed". The merchant's dashboard will reflect the real-time status.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       8. THE CODE — FILE BY FILE
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">8</span> The Code — File by File</h2>
+
+    <div class="card">
+      <h3>app/db/supabase.py — Database client</h3>
+      <p>This file creates a single connection to Supabase and exports it. All other files import <span class="inline-code">supabase</span> from here — there is only one connection object for the whole app.</p>
+      <pre><code>import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>app/daraja/auth.py — OAuth token with caching</h3>
+      <p>Fetches an access token from Daraja. Caches it in memory for 55 minutes so we do not make a network request on every payment. If the cached token is still valid, it is returned immediately.</p>
+      <pre><code>import os, base64, httpx
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
+CONSUMER_KEY = os.getenv("DARAJA_CONSUMER_KEY")
+CONSUMER_SECRET = os.getenv("DARAJA_CONSUMER_SECRET")
+ENVIRONMENT = os.getenv("DARAJA_ENVIRONMENT", "sandbox")
+BASE_URL = "https://sandbox.safaricom.co.ke" if ENVIRONMENT == "sandbox" \
+           else "https://api.safaricom.co.ke"
+
+_cached_token = None
+_token_expiry = None
+
+def get_access_token() -> str:
+    global _cached_token, _token_expiry
+    if _cached_token and _token_expiry and datetime.now() < _token_expiry:
+        return _cached_token
+    credentials = f"{CONSUMER_KEY}:{CONSUMER_SECRET}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+    response = httpx.get(
+        f"{BASE_URL}/oauth/v1/generate?grant_type=client_credentials",
+        headers={"Authorization": f"Basic {encoded_credentials}"},
+    )
+    response.raise_for_status()
+    data = response.json()
+    _cached_token = data["access_token"]
+    _token_expiry = datetime.now() + timedelta(minutes=55)
+    return _cached_token</code></pre>
+      <div class="why">
+        <strong>Why 55 minutes?</strong> Daraja tokens expire after 60 minutes. Using 55 minutes gives a 5-minute safety buffer so a token cached near expiry does not get used and fail mid-request.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>app/daraja/stk_push.py — Initiating the payment prompt</h3>
+      <p>This function is called whenever we want to ask a customer to pay. It gets the token, builds the payload, logs the request to Supabase, sends the request to Daraja, and stores a pending transaction record.</p>
+      <pre><code>import os, base64
+from datetime import datetime
+import httpx
+from dotenv import load_dotenv
+from app.daraja.auth import get_access_token, BASE_URL
+from app.db.supabase import supabase
+
+load_dotenv()
+SHORTCODE = os.getenv("DARAJA_SHORTCODE")
+PASSKEY = os.getenv("DARAJA_PASSKEY")
+
+def initiate_stk_push(merchant_id: str, phone: str, amount: int,
+                      account_reference: str, description: str = "Payment"):
+    token = get_access_token()
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    password_str = f"{SHORTCODE}{PASSKEY}{timestamp}"
+    password = base64.b64encode(password_str.encode()).decode()
+
+    payload = {
+        "BusinessShortCode": SHORTCODE,
+        "Password": password,
+        "Timestamp": timestamp,
+        "TransactionType": "CustomerPayBillOnline",
+        "Amount": amount,
+        "PartyA": phone,
+        "PartyB": SHORTCODE,
+        "PhoneNumber": phone,
+        "CallBackURL": os.getenv("DARAJA_CALLBACK_URL"),
+        "AccountReference": account_reference,
+        "TransactionDesc": description,
+    }
+
+    supabase.table("daraja_logs").insert({
+        "merchant_id": merchant_id,
+        "direction": "request",
+        "payload": payload,
+    }).execute()
+
+    response = httpx.post(
+        f"{BASE_URL}/mpesa/stkpush/v1/processrequest",
+        json=payload,
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    response.raise_for_status()
+    result = response.json()
+
+    checkout_request_id = result.get("CheckoutRequestID")
+
+    supabase.table("transactions").insert({
+        "merchant_id": merchant_id,
+        "checkout_request_id": checkout_request_id,
+        "amount": amount,
+        "phone": phone,
+        "status": "pending",
+    }).execute()
+
+    return result</code></pre>
+      <div class="why">
+        <strong>Why log the request BEFORE sending it?</strong> If Daraja returns an error, we still have a log of what we tried to send. If we logged after, a crash between sending and logging would leave a blind spot in the audit trail.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>app/daraja/callbacks.py — Receiving payment confirmations from Daraja</h3>
+      <p>Daraja calls this endpoint after a customer pays (or fails to pay). The handler finds the matching pending transaction, checks for duplicate callbacks (idempotency), and updates the status to "paid" or "failed".</p>
+      <pre><code>from fastapi import APIRouter, Request
+from app.db.supabase import supabase
+
+router = APIRouter()
+
+@router.post("/callbacks/stk-result")
+async def stk_callback(request: Request):
+    payload = await request.json()
+    callback = payload["Body"]["stkCallback"]
+    checkout_request_id = callback["CheckoutRequestID"]
+    result_code = callback["ResultCode"]
+    result_desc = callback["ResultDesc"]
+
+    # Find the transaction we created when we sent the STK Push
+    pending = (
+        supabase.table("transactions")
+        .select("id, merchant_id, status")
+        .eq("checkout_request_id", checkout_request_id)
+        .execute()
+    )
+
+    # If no matching transaction, log it and accept gracefully
+    if not pending.data:
+        supabase.table("daraja_logs").insert({
+            "merchant_id": None,
+            "direction": "callback_unmatched",
+            "payload": payload,
+        }).execute()
+        return {"ResultCode": 0, "ResultDesc": "Accepted"}
+
+    transaction = pending.data[0]
+    merchant_id = transaction["merchant_id"]
+
+    # Log every callback we receive
+    supabase.table("daraja_logs").insert({
+        "merchant_id": merchant_id,
+        "direction": "callback",
+        "payload": payload,
+    }).execute()
+
+    # Idempotency check — do not process if already marked paid
+    if transaction["status"] == "paid":
+        return {"ResultCode": 0, "ResultDesc": "Already processed"}
+
+    # Handle failure (customer cancelled, wrong PIN, timeout)
+    if result_code != 0:
+        supabase.table("transactions").update({
+            "status": "failed",
+            "failure_reason": result_desc,
+        }).eq("checkout_request_id", checkout_request_id).execute()
+        return {"ResultCode": 0, "ResultDesc": "Accepted"}
+
+    # Handle success
+    items = callback["CallbackMetadata"]["Item"]
+    metadata = {item["Name"]: item.get("Value") for item in items}  # .get() avoids KeyError on items with no Value
+    supabase.table("transactions").update({
+        "status": "paid",
+        "mpesa_receipt": metadata.get("MpesaReceiptNumber"),
+        "amount": metadata.get("Amount"),
+    }).eq("checkout_request_id", checkout_request_id).execute()
+
+    return {"ResultCode": 0, "ResultDesc": "Accepted"}</code></pre>
+      <div class="why">
+        <strong>Why always return ResultCode 0?</strong> Daraja reads this response. If we return a non-zero code, Daraja treats it as an error on our end and may retry the callback — causing duplicate processing. Always return 0 to tell Daraja "we received it, do not retry."
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>app/main.py — FastAPI entry point</h3>
+      <pre><code>from fastapi import FastAPI
+from app.daraja.callbacks import router as daraja_router
+
+app = FastAPI(title="Vela API", version="1.0.0")
+app.include_router(daraja_router)
+
+@app.get("/healthz")
+def health_check():
+    return {"status": "ok", "service": "vela-api"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)</code></pre>
+      <p style="margin-top:0.6rem;">Start the server with:</p>
+      <pre><code>uvicorn app.main:app --reload</code></pre>
+      <div class="why">
+        <strong>Why <span class="inline-code">--reload</span>?</strong> In development, <span class="inline-code">--reload</span> watches your files for changes and restarts the server automatically when you save. In production on Railway, you omit <span class="inline-code">--reload</span> because restarting on every file change is a security and performance risk on a live server.
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       9. NGROK — EXPOSING LOCALHOST TO DARAJA
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">9</span> ngrok — Making Daraja Reach Your Laptop</h2>
+    <div class="card">
+      <h3>The problem ngrok solves</h3>
+      <p>Your laptop runs on a private IP address (like 192.168.x.x). Daraja's servers on Safaricom's network cannot reach that address — it is behind your router's firewall and network address translation. Daraja needs a public URL to send the payment callback to. ngrok creates a secure tunnel from a public URL on the internet to your <span class="inline-code">localhost:8000</span>.</p>
+    </div>
+    <div class="card">
+      <h3>Running ngrok</h3>
+      <pre><code># In a separate terminal (leave this running)
+ngrok http 8000</code></pre>
+      <p>ngrok prints a forwarding URL like <span class="inline-code">https://spotless-treble-cure.ngrok-free.dev</span>. That URL is what goes into your <span class="inline-code">.env</span> as <span class="inline-code">DARAJA_CALLBACK_URL</span>:</p>
+      <pre><code>DARAJA_CALLBACK_URL=https://spotless-treble-cure.ngrok-free.dev/callbacks/stk-result</code></pre>
+      <div class="why">
+        <strong>Why does the ngrok URL change?</strong> On the free plan, ngrok gives you a new random URL every time you restart it. When it changes, update the DARAJA_CALLBACK_URL in your .env file and restart uvicorn so the new URL is loaded. On the paid plan, you can reserve a static domain.
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       10. ERRORS — ALL PROBLEMS AND FIXES
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">10</span> Errors Encountered — Causes and Fixes</h2>
+
+    <div class="error-card">
+      <div class="error-title">Error 1 — "Attribute 'app' not found in module 'app.main'"</div>
+      <div class="error-cause">
+        <strong>Symptom:</strong> uvicorn refused to start with this error even though <span class="inline-code">app</span> was clearly defined in <span class="inline-code">main.py</span>.<br><br>
+        <strong>Root cause:</strong> Python caches compiled bytecode in <span class="inline-code">__pycache__</span> folders. The cached version of <span class="inline-code">app/main.py</span> was outdated or corrupted — Python was reading the old cache instead of the actual file. The cache had no knowledge of the <span class="inline-code">app</span> object.
+      </div>
+      <div class="fix-block">
+        <strong>Fix:</strong> Delete the pycache folder and restart uvicorn.<br>
+        <code>Remove-Item -Recurse -Force app\__pycache__</code><br><br>
+        After clearing the cache, Python recompiles from the actual source file and finds the <span class="inline-code">app</span> object correctly.
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-title">Error 2 — STK Push returning 404 Not Found</div>
+      <div class="error-cause">
+        <strong>Symptom:</strong> The STK Push request was reaching Daraja's server (not a network issue) but getting a 404 response, as if the endpoint did not exist.<br><br>
+        <strong>Root cause:</strong> A spelling typo in the HTTP headers dict:
+        <pre><code style="color:#ff7b72;">headers={"Authoriation": f"Bearer {token}"}</code></pre>
+        The word "Authorization" was misspelled as "Authoriation" (missing the 'z'). The header was silently ignored by httpx, so the request was sent without an Authorization header. Daraja rejected the unauthenticated request with 404 instead of 401 (Daraja's quirk).
+      </div>
+      <div class="fix-block">
+        <strong>Fix:</strong> Correct the spelling.<br>
+        <code style="color:#56d364;">headers={"Authorization": f"Bearer {token}"}</code><br><br>
+        <strong>Lesson:</strong> HTTP header names are case-sensitive strings. A single character typo in a string key is invisible to Python — the language has no way to know "Authoriation" is wrong. When you get a 404 from an API that should exist, check your headers before assuming the URL is wrong.
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-title">Error 3 — Indentation bug in stk_push.py</div>
+      <div class="error-cause">
+        <strong>Symptom:</strong> The last few lines of <span class="inline-code">stk_push.py</span> ran when the file was imported, not when the function was called. Variables like <span class="inline-code">checkout_request_id</span> were undefined at module level, causing a NameError.<br><br>
+        <strong>Root cause:</strong> The lines after <span class="inline-code">response.raise_for_status()</span> were accidentally indented at zero (module level) instead of four spaces (inside the function). Python uses indentation to define scope — module-level code runs once on import, function-level code runs when the function is called.
+      </div>
+      <div class="fix-block">
+        <strong>Fix:</strong> Indent all lines after <span class="inline-code">response = httpx.post(...)</span> to be inside the function (4 spaces). The <span class="inline-code">return result</span> line must also be inside the function.<br><br>
+        <strong>Lesson:</strong> Python's indentation is not just style — it is the syntax that defines where a block of code belongs. An off-by-one indentation error moves code from inside a function to outside it with no warning.
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-title">Error 4 — ngrok "failed to fetch CRL" / SSL errors</div>
+      <div class="error-cause">
+        <strong>Symptom:</strong> ngrok showed TLS/SSL errors when Daraja tried to reach the tunnel. Certificate Revocation List (CRL) fetch failures appeared in ngrok logs.<br><br>
+        <strong>Root cause:</strong> Avast antivirus has a feature called "HTTPS Scanning" (under Scam Guardian → Web Guard). This feature intercepts all HTTPS connections and replaces SSL certificates with Avast's own certificates so it can inspect encrypted traffic. ngrok uses certificate pinning — it expects specific certificates — and Avast's substituted certificate caused the TLS handshake to fail.
+      </div>
+      <div class="fix-block">
+        <strong>Fix:</strong> In Avast, go to <strong>Menu → Settings → Protection → Scam Guardian → Web Guard</strong>. Uncheck <strong>"Enable HTTPS scanning"</strong>. Restart ngrok.<br><br>
+        ngrok then negotiates TLS directly without Avast intercepting it, and Daraja's callbacks reach the tunnel correctly.
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-title">Error 5 — Multiple zombie uvicorn processes all binding port 8000</div>
+      <div class="error-cause">
+        <strong>Symptom:</strong> After repeated Ctrl+C and restarts, <span class="inline-code">netstat -ano | findstr :8000</span> showed five different PIDs all listening on port 8000. The terminal being watched was not the process actually receiving requests. Logs from the watched terminal showed nothing even when requests arrived.<br><br>
+        <strong>Root cause:</strong> <span class="inline-code">uvicorn --reload</span> spawns a parent process and a child process. When you press Ctrl+C, sometimes only one of them dies. Opening multiple VS Code terminal tabs and starting uvicorn in each one creates multiple server processes, all competing on port 8000. The operating system routes incoming requests to whichever process it chooses — not necessarily the one whose logs you are watching.
+      </div>
+      <div class="fix-block">
+        <strong>Fix:</strong> Open Task Manager → Details tab. Sort by "Image Name". Find all <span class="inline-code">python.exe</span> entries. Right-click each one → End Task. Then verify the port is clear:<br>
+        <code>netstat -ano | findstr :8000</code><br>
+        It should return nothing. Then start one single clean uvicorn process in one terminal.<br><br>
+        <strong>Why taskkill sometimes fails:</strong> If VS Code terminals are configured to auto-restart their process, killing a PID spawns a new one immediately. Killing from Task Manager (with End Task on the parent) is more reliable.
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-title">Error 6 — Callback returning 500 Internal Server Error ✓ RESOLVED</div>
+      <div class="error-cause">
+        <strong>Symptom:</strong> Payment was deducted from the M-Pesa account. The ngrok inspector confirmed Daraja sent a callback to the tunnel. But the server returned 500 and the transaction stayed "pending" in Supabase.<br><br>
+        <strong>Root cause — two layers:</strong><br><br>
+        <strong>Layer 1 (why we couldn't see the error):</strong> Five zombie uvicorn processes were all competing on port 8000. The terminal being watched was not the one actually receiving requests, so no traceback ever appeared. Once all processes were killed via Task Manager and a single clean server was started, the traceback became visible immediately.<br><br>
+        <strong>Layer 2 (the actual bug) — <span class="inline-code">KeyError: 'Value'</span> in callbacks.py line 50:</strong><br>
+        Daraja's callback payload contains a list of items inside <span class="inline-code">CallbackMetadata</span>. Most items have both a <span class="inline-code">"Name"</span> and a <span class="inline-code">"Value"</span> key. But Daraja sometimes includes extra items that have only <span class="inline-code">"Name"</span> and no <span class="inline-code">"Value"</span> key at all. The code was using <span class="inline-code">item["Value"]</span> — Python's hard dictionary access — which crashes with a KeyError the moment a key does not exist.
+      </div>
+      <div class="fix-block">
+        <strong>Fix:</strong> Changed <span class="inline-code">item["Value"]</span> to <span class="inline-code">item.get("Value")</span> on line 50 of callbacks.py.<br><br>
+        <code>metadata = {item["Name"]: item.get("Value") for item in items}</code><br><br>
+        <strong>Why .get() works:</strong> <span class="inline-code">dict.get("key")</span> is the safe version of <span class="inline-code">dict["key"]</span>. If the key does not exist, it returns <span class="inline-code">None</span> instead of crashing. The metadata dictionary is still built correctly from items that do have values, and the function completes without error.<br><br>
+        <strong>Result:</strong> The full loop now works end to end — STK Push sent → customer pays → Daraja callback received → transaction updated to <span class="inline-code">paid</span> with M-Pesa receipt number in Supabase.
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       11. KEY CONCEPTS LEARNED
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">11</span> Key Concepts Learned Today</h2>
+    <div class="card">
+      <table>
+        <tr><th>Concept</th><th>What it means in plain language</th></tr>
+        <tr>
+          <td>OAuth Token</td>
+          <td>A temporary password Daraja issues to prove you are who you say you are. Expires in 60 minutes. Must be sent with every request.</td>
+        </tr>
+        <tr>
+          <td>STK Push</td>
+          <td>Safaricom sends a payment pop-up to a customer's phone. The customer enters their PIN. Payment is complete without any physical interaction with the business.</td>
+        </tr>
+        <tr>
+          <td>Callback URL</td>
+          <td>A public URL you give Daraja. After the customer acts, Safaricom's servers POST the result to this URL. Your code must be running and reachable at that URL.</td>
+        </tr>
+        <tr>
+          <td>CheckoutRequestID</td>
+          <td>A unique ID Daraja returns when you send an STK Push. You store it. When the callback arrives, this ID links the callback back to your transaction record.</td>
+        </tr>
+        <tr>
+          <td>Idempotency</td>
+          <td>Designing the system so that processing the same event twice produces the same result as processing it once. Achieved here via UNIQUE constraints on receipt numbers and status checks before updating.</td>
+        </tr>
+        <tr>
+          <td>Multi-tenancy</td>
+          <td>One system serving many independent businesses, with data fully isolated between them. Achieved by putting merchant_id on every table and filtering by it in every query.</td>
+        </tr>
+        <tr>
+          <td>FastAPI Router</td>
+          <td>A way to group related endpoints together in a separate file, then attach them to the main app. Keeps the code organized as the API grows.</td>
+        </tr>
+        <tr>
+          <td>Python __pycache__</td>
+          <td>Compiled bytecode cache Python maintains for speed. Can become stale and cause confusing errors. Safe to delete — Python regenerates it automatically.</td>
+        </tr>
+        <tr>
+          <td>Sandbox vs Production</td>
+          <td>Sandbox: a testing environment where no real money moves. Uses fake shortcodes and credentials. Production: the live environment where real M-Pesa transactions happen.</td>
+        </tr>
+        <tr>
+          <td>dict["key"] vs dict.get("key")</td>
+          <td><span style="color:#ff7b72;">dict["key"]</span> crashes with KeyError if the key is missing. <span style="color:#56d364;">dict.get("key")</span> returns None safely. Always use .get() when a key might not exist — like in third-party API responses where you cannot control every field.</td>
+        </tr>
+        <tr>
+          <td>Zombie processes</td>
+          <td>A process that is still running and holding a port after you thought you stopped it. On Windows with uvicorn --reload, Ctrl+C sometimes only kills the child. The parent keeps running, holds the port, and silently steals all incoming requests from any new server you start.</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       12. POST /pay ENDPOINT
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">12</span> The POST /pay Endpoint</h2>
+    <div class="card">
+      <h3>Why this endpoint matters</h3>
+      <p>Before this, the only way to trigger an STK Push was to run a Python command in the terminal manually. That only works on a developer's laptop. The <span class="inline-code">/pay</span> endpoint turns the payment trigger into a proper API call — so the merchant dashboard, a WhatsApp bot, or any other client can trigger a payment by simply sending a POST request to <span class="inline-code">/pay</span> with a JSON body.</p>
+    </div>
+    <div class="card">
+      <h3>app/daraja/routes.py</h3>
+      <pre><code>from fastapi import APIRouter
+from pydantic import BaseModel
+from app.daraja.stk_push import initiate_stk_push
+
+router = APIRouter()
+
+class PayRequest(BaseModel):
+    merchant_id: str
+    phone: str
+    amount: int
+    account_reference: str
+    description: str = "Payment"
+
+@router.post("/pay")
+def pay(request: PayRequest):
+    result = initiate_stk_push(
+        merchant_id=request.merchant_id,
+        phone=request.phone,
+        amount=request.amount,
+        account_reference=request.account_reference,
+        description=request.description,
+    )
+    return result</code></pre>
+      <div class="why">
+        <strong>Why Pydantic BaseModel?</strong> FastAPI uses Pydantic to validate every incoming request automatically. If a caller sends a request missing <span class="inline-code">phone</span> or sends <span class="inline-code">amount</span> as a string instead of an integer, FastAPI rejects it with a clear 422 error before the code even runs. This is free input validation with zero extra code.
+      </div>
+    </div>
+    <div class="card">
+      <h3>Registering the router in main.py</h3>
+      <p>Every router must be registered in <span class="inline-code">main.py</span> using <span class="inline-code">app.include_router()</span>. Two routers now exist:</p>
+      <pre><code>from app.daraja.callbacks import router as daraja_router
+from app.daraja.routes import router as pay_router
+
+app.include_router(daraja_router)
+app.include_router(pay_router)</code></pre>
+      <div class="why">
+        <strong>Why <span class="inline-code">as pay_router</span>?</strong> Both files export a variable called <span class="inline-code">router</span>. Without the alias, the second import would overwrite the first and one router would be lost. The <span class="inline-code">as</span> keyword gives each a unique name in the file.
+      </div>
+    </div>
+    <div class="card">
+      <h3>Testing via FastAPI auto-docs</h3>
+      <p>FastAPI automatically generates an interactive API documentation page at <span class="inline-code">http://127.0.0.1:8000/docs</span>. Every endpoint appears there with a "Try it out" button. Clicking it opens a form where you can fill in the JSON body and execute the request directly from the browser — no terminal command needed.</p>
+      <p style="margin-top:0.5rem;">The endpoint is tested by sending:</p>
+      <pre><code>{
+  "merchant_id": "aedd815e-9d11-473d-a3c9-e41cf2d3a3e3",
+  "phone": "254745266526",
+  "amount": 1,
+  "account_reference": "TEST-ENDPOINT"
+}</code></pre>
+      <p style="margin-top:0.5rem;">Result: phone receives the M-Pesa prompt, customer pays, transaction recorded in Supabase. <span style="color:#3fb950;">✓ Confirmed working.</span></p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       13. WHAT IS NEXT
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">13</span> What Is Next</h2>
+    <div class="card">
+      <ol>
+        <li><s><strong>Fix the callback 500 error</strong></s> <span style="color:#3fb950;">✓ Done — KeyError fixed with .get("Value")</span></li>
+        <li><s><strong>Remove debug print statements from stk_push.py</strong></s> <span style="color:#3fb950;">✓ Done</span></li>
+        <li><s><strong>Delete test_stk.py</strong></s> <span style="color:#3fb950;">✓ Done</span></li>
+        <li><s><strong>Add a POST /pay endpoint</strong></s> <span style="color:#3fb950;">✓ Done — tested and working from /docs</span></li>
+        <li><strong>Phone number normalisation</strong> — Daraja requires 2547XXXXXXXX. Users may enter 07XXXXXXXX or +2547XXXXXXXX. The code should normalise this before sending to avoid silent failures.</li>
+        <li><strong>Supabase error handling</strong> — Currently if a Supabase insert fails, the error is swallowed silently. Add proper error checking so failures are visible.</li>
+        <li><strong>Reconciliation — STK Query API</strong> — A scheduled job that finds all transactions stuck as "pending" for more than 5 minutes and queries Daraja's STK Query endpoint to get the real status. This is the safety net for missed callbacks. Must be in place before the first real merchant goes live.</li>
+        <li><strong>Deploy to Railway</strong> — Move off ngrok to a permanent public URL so the callback URL does not change every restart.</li>
+        <li><strong>Build the merchant dashboard</strong> (Next.js) — display live transaction status, totals, and payment history per merchant.</li>
+      </ol>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  VELA Build Journal &nbsp;·&nbsp; Session 1 &nbsp;·&nbsp; 17 June 2026 &nbsp;·&nbsp; Fredrick Ochieng
+</footer>
+
+</body>
+</html>
