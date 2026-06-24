@@ -47,7 +47,6 @@ def initiate_stk_push(merchant_id:str,phone: str, amount: int, account_reference
         headers={"Authorization": f"Bearer {token}"},
         
     )
-    print("DARAJA RESPONSE BODY:", response.text)
 
     response.raise_for_status()
     result = response.json()

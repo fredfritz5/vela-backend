@@ -1032,19 +1032,97 @@ app.include_router(pay_router)</code></pre>
         <li><s><strong>Remove debug print statements from stk_push.py</strong></s> <span style="color:#3fb950;">✓ Done</span></li>
         <li><s><strong>Delete test_stk.py</strong></s> <span style="color:#3fb950;">✓ Done</span></li>
         <li><s><strong>Add a POST /pay endpoint</strong></s> <span style="color:#3fb950;">✓ Done — tested and working from /docs</span></li>
-        <li><strong>Phone number normalisation</strong> — Daraja requires 2547XXXXXXXX. Users may enter 07XXXXXXXX or +2547XXXXXXXX. The code should normalise this before sending to avoid silent failures.</li>
+        <li><s><strong>Phone number normalisation</strong></s> <span style="color:#3fb950;">✓ Done — normalise_phone() correct. Bug found and fixed in routes.py: initiate_stk_push was receiving request.phone (raw) instead of phone (normalised). "0745266526" now correctly reaches Daraja as "254745266526".</span></li>
         <li><strong>Supabase error handling</strong> — Currently if a Supabase insert fails, the error is swallowed silently. Add proper error checking so failures are visible.</li>
         <li><strong>Reconciliation — STK Query API</strong> — A scheduled job that finds all transactions stuck as "pending" for more than 5 minutes and queries Daraja's STK Query endpoint to get the real status. This is the safety net for missed callbacks. Must be in place before the first real merchant goes live.</li>
+        <li><strong>Bank Adapter Pattern</strong> — Abstract interface (initiate_push, parse_callback, fetch_transactions, refresh_auth) + Payment data class. Refactor existing Daraja code as first adapter. All future banks (KCB Buni, Equity Jenga, Co-op, NCBA) implement the same interface. Core logic (reconciliation, dashboard) only consumes Payment objects — never imports a bank module directly.</li>
         <li><strong>Deploy to Railway</strong> — Move off ngrok to a permanent public URL so the callback URL does not change every restart.</li>
-        <li><strong>Build the merchant dashboard</strong> (Next.js) — display live transaction status, totals, and payment history per merchant.</li>
+        <li><strong>KCB Buni adapter</strong> — Week 3. Paybill 522533. OAuth + IPN webhook + parse_callback returning Payment object.</li>
+        <li><strong>Minimal Next.js dashboard</strong> — 3 screens: customer list, order list, transaction list (showing source bank). Hosted on Vercel.</li>
+        <li><strong>SMS via Africa's Talking</strong> — Payment reminders and receipts. Replaces WhatsApp Cloud API (dropped).</li>
       </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       14b. NORMALISATION BUG — VARIABLE SHADOWING
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">14b</span> Bug Found &amp; Fixed: Phone Normalisation Not Applied</h2>
+    <div class="card">
+      <h3>What happened</h3>
+      <p>The <span class="inline-code">normalise_phone()</span> function was written correctly and confirmed correct via <span class="inline-code">repr()</span> debug output. But Daraja kept returning <span class="inline-code">400.002.02 — Bad Request: Invalid PhoneNumber</span> when we sent <span class="inline-code">"0745266526"</span> through the <span class="inline-code">/pay</span> endpoint.</p>
+      <p style="margin-top:0.5rem;">The cause was in <span class="inline-code">routes.py</span>. The normalised value was stored in a variable called <span class="inline-code">phone</span>, but the original un-normalised value <span class="inline-code">request.phone</span> was passed to <span class="inline-code">initiate_stk_push</span>:</p>
+      <pre><code># BROKEN — normalises phone but never uses the result
+def pay(request: PayRequest):
+    phone = normalise_phone(request.phone)   # ← produces "254745266526"
+    print("REPR:", repr(phone))              # ← correctly prints the normalised value
+    result = initiate_stk_push(
+        phone=request.phone,                 # ← BUG: sends "0745266526" to Daraja!
+    )</code></pre>
+      <div class="why">
+        <strong>Why the REPR print was misleading:</strong> It printed the <em>normalised</em> variable, so the output looked correct. But the variable being sent to the function was the original raw value. The bug was invisible from the debug output alone.
+      </div>
+    </div>
+    <div class="card">
+      <h3>The fix</h3>
+      <p>Pass the normalised variable, not the raw request field:</p>
+      <pre><code># FIXED
+def pay(request: PayRequest):
+    phone = normalise_phone(request.phone)
+    result = initiate_stk_push(
+        phone=phone,                         # ← now sends "254745266526"
+    )</code></pre>
+      <p style="margin-top:0.5rem;"><span style="color:#3fb950;">✓ Confirmed working.</span> Sending <span class="inline-code">"0745266526"</span> through <span class="inline-code">/pay</span> now correctly triggers an STK Push.</p>
+    </div>
+    <div class="card">
+      <h3>Lesson</h3>
+      <p>When you call a function that transforms data, always check that you are using the <em>return value</em> going forward — not the original input. A common pattern that hides this mistake is printing the return value for debugging: the print looks correct even though the wrong variable is being passed downstream.</p>
+      <p style="margin-top:0.5rem;">This class of mistake is called a <strong>variable shadowing / unused-return bug</strong>. The fix is always the same: make sure the right variable travels all the way through.</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       14. ARCHITECTURAL DECISIONS
+  ═══════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="num">14</span> Key Architectural Decisions</h2>
+    <div class="card">
+      <h3>Bank Adapter Pattern — why it exists</h3>
+      <p>Vela serves two types of merchants: those who collect money via M-Pesa (till/paybill), and those whose money goes directly to a bank account (landlords, schools, businesses on KCB, Equity, Co-op, NCBA paybills). Each bank has its own API, its own OAuth flow, its own callback format. Without an abstraction, adding a new bank would require rewriting reconciliation logic, dashboard queries, and invoice matching — every time.</p>
+      <div class="why">
+        <strong>The rule:</strong> Every bank (Daraja, KCB Buni, Equity Jenga, Co-op, NCBA) implements one interface. Core logic only consumes a <span class="inline-code">Payment</span> object. A merchant record stores which adapter is active. A dispatcher picks the right implementation at runtime. Adding a new bank means writing one new file — not rewriting the platform.
+      </div>
+    </div>
+    <div class="card">
+      <h3>SMS instead of WhatsApp</h3>
+      <p>The original plan used WhatsApp Business Cloud API for reminders and receipts. This was changed to <strong>Africa's Talking SMS</strong> for two reasons: SMS works on every phone without an app, and Africa's Talking is a simpler integration with strong Kenya coverage. WhatsApp would have required a verified business account and Meta approval process that adds unnecessary delay before the first merchant goes live.</p>
+    </div>
+    <div class="card">
+      <h3>Bank roadmap</h3>
+      <table>
+        <tr><th>Bank</th><th>Paybill</th><th>Week</th><th>Notes</th></tr>
+        <tr><td>Safaricom Daraja</td><td>174379 (sandbox)</td><td>1–2 ✓</td><td>STK Push + callback. First adapter implemented.</td></tr>
+        <tr><td>KCB Buni</td><td>522533</td><td>3</td><td>Father landlord demo target.</td></tr>
+        <tr><td>Equity Jenga</td><td>247247</td><td>4</td><td>Different OAuth model — document in ADR.</td></tr>
+        <tr><td>Co-op Bank</td><td>400200</td><td>5</td><td>IPN may be unreliable — polling fallback required.</td></tr>
+        <tr><td>NCBA</td><td>303030</td><td>6</td><td>+ cross-bank hardening week.</td></tr>
+        <tr><td>Stanbic</td><td>516600</td><td>Backlog</td><td>Only when a specific client requires it.</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Session 1 — first git commit</h3>
+      <p>Commit hash: <span class="inline-code">2977262</span> · 13 files · 1,297 insertions</p>
+      <p>Committed: auth.py, stk_push.py, callbacks.py, routes.py, utils.py, supabase.py, main.py, __init__.py files, requirements.txt, .env.example, journal/progress.html</p>
+      <p style="margin-top:0.4rem;">Not committed (by design): <span class="inline-code">.env</span> (credentials, in .gitignore)</p>
     </div>
   </section>
 
 </div>
 
 <footer>
-  VELA Build Journal &nbsp;·&nbsp; Session 1 &nbsp;·&nbsp; 17 June 2026 &nbsp;·&nbsp; Fredrick Ochieng
+  VELA Build Journal &nbsp;·&nbsp; Sessions 1–2 &nbsp;·&nbsp; 17–24 June 2026 &nbsp;·&nbsp; Fredrick Ochieng
 </footer>
 
 </body>

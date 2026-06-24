@@ -15,10 +15,9 @@ class PayRequest(BaseModel):
 @router.post("/pay")
 def pay(request: PayRequest):
     phone = normalise_phone(request.phone)
-    print("NORMALISED PHONE", phone)
     result = initiate_stk_push(
         merchant_id=request.merchant_id,
-        phone=request.phone,
+        phone=phone,
         amount=request.amount,
         account_reference=request.account_reference,
         description=request.description,
